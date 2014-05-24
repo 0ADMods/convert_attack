@@ -212,7 +212,7 @@ Attack.prototype.Schema +=
 
 Attack.prototype.GetAttackTypes = function()
 {
-    warn('GetAttackTypes: this: ' + this + ' template: ' + this.template + '   is_convert_in_template: ' + this.template.Convert);
+    //warn('GetAttackTypes: this: ' + this + ' template: ' + this.template + '   is_convert_in_template: ' + this.template.Convert);
 	var ret = [];
 	if (this.template.Convert) ret.push("Convert");
 	if (this.template.Charge) ret.push("Charge");
@@ -229,7 +229,7 @@ Attack.prototype.GetAttackTypes = function()
  */
 Attack.prototype.PerformAttack = function(type, target)
 {
-    warn('type: ' + type + '  target: ' + target);
+    //warn('type: ' + type + '  target: ' + target);
 	// If this is a ranged attack, then launch a projectile
 	if (type == "Ranged")
 	{
@@ -306,12 +306,12 @@ Attack.prototype.PerformAttack = function(type, target)
 	{
         
 		var cmpOwnership = Engine.QueryInterface(target, IID_Ownership);
-        warn('Owner Target: ' + cmpOwnership);
+        //warn('Owner Target: ' + cmpOwnership);
 		if (!cmpOwnership)
 			return;
 
 		var cmpOwnership2 = Engine.QueryInterface(this.entity, IID_Ownership);
-        warn('Owner Source: ' + cmpOwnership2);
+        //warn('Owner Source: ' + cmpOwnership2);
 		if (!cmpOwnership2)
 			return;
 
