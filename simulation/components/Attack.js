@@ -973,4 +973,3 @@ Attack.prototype.OnUpdate = function(msg)
 }
 
 Engine.RegisterComponentType(IID_Attack, "Attack", Attack);
-Engine.RegisterGlobal("Attack", Attack);

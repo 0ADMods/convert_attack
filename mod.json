@@ -1,0 +1,10 @@
+{
+    "name": "funcionality_convert_unit",
+    "version": "0.0.16",
+    "label": "Convert a Unit",
+    "url": "github.com/0ADMods/ConvertUnit",
+    "description": "Adding a conversion attack type. Includes a converting priest unit type. Note: This approach might be suboptimal.",
+    "dependencies": ["0ad 0.0.16"],
+    "total_size": -1,
+    "type": "functionality"
+}

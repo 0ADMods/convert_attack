@@ -1,4 +1,4 @@
-/*
+
 
 var bonusesSchema = 
 	"<optional>" +
@@ -188,7 +188,7 @@ Attack.prototype.Schema =
 ;
 
 
-Attack.prototype.Schema += +
+Attack.prototype.Schema += 
 	// TODO: finish the convert attack
   	"<optional>" +
 		"<element name='Convert'>" +
@@ -210,7 +210,6 @@ Attack.prototype.Schema += +
 			"</interleave>" +
 		"</element>" +
 	"</optional>";
-warn(Attack.prototype.Schema);
 
 Attack.prototype.GetAttackTypes = function()
 {
@@ -228,7 +227,7 @@ Attack.prototype.GetAttackTypes = function()
  * Attack the target entity. This should only be called after a successful range check,
  * and should only be called after GetTimers().repeat msec has passed since the last
  * call to PerformAttack.
- *TODO/
+ */
 Attack.prototype.PerformAttack = function(type, target)
 {
     warn('type: ' + type + '  target: ' + target);
@@ -354,4 +353,7 @@ Attack.prototype.GetNearbyEntities = function(startEnt, range, friendlyFire)
 	var rangeManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_RangeManager);
 	return rangeManager.ExecuteQuery(startEnt, 0, range, players, IID_DamageReceiver);
 }
-*/
+
+
+
+Engine.RegisterComponentType(IID_Attack, "Attack",  Attack);
