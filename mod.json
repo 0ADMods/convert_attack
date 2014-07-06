@@ -4,6 +4,6 @@
     "label": "Conversion Attack Type ",
     "url": "github.com/0ADMods/convert_unit",
     "description": "Adding a conversion attack type. Includes a converting priest unit type. Note: This approach might be suboptimal.",
-    "dependencies": ["0ad 0.0.16"],
+    "dependencies": ["0ad=0.0.16"],
     "type": "functionality"
 }
