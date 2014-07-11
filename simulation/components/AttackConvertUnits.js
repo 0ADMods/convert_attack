@@ -1,193 +1,5 @@
 
-
-var bonusesSchema = 
-	"<optional>" +
-		"<element name='Bonuses'>" +
-			"<zeroOrMore>" +
-				"<element>" +
-					"<anyName/>" +
-					"<interleave>" +
-						"<optional>" +
-							"<element name='Civ' a:help='If an entity has this civ then the bonus is applied'><text/></element>" +
-						"</optional>" +
-						"<element name='Classes' a:help='If an entity has all these classes then the bonus is applied'><text/></element>" +
-						"<element name='Multiplier' a:help='The attackers attack strength is multiplied by this'><ref name='nonNegativeDecimal'/></element>" +
-					"</interleave>" +
-				"</element>" +
-			"</zeroOrMore>" +
-		"</element>" +
-	"</optional>";
-
-var preferredClassesSchema =
-	"<optional>" +
-		"<element name='PreferredClasses' a:help='Space delimited list of classes preferred for attacking. If an entity has any of theses classes, it is preferred. The classes are in decending order of preference'>" +
-			"<attribute name='datatype'>" +
-				"<value>tokens</value>" +
-			"</attribute>" +
-			"<text/>" +
-		"</element>" +
-	"</optional>";
-
-var restrictedClassesSchema =
-	"<optional>" +
-		"<element name='RestrictedClasses' a:help='Space delimited list of classes that cannot be attacked by this entity. If target entity has any of these classes, it cannot be attacked'>" +
-			"<attribute name='datatype'>" +
-				"<value>tokens</value>" +
-			"</attribute>" +
-			"<text/>" +
-		"</element>" +
-	"</optional>";
-
-Attack.prototype.Schema =
-    "<a:help>Controls the attack abilities and strengths of the unit.</a:help>" +
-	"<a:example>" +
-		"<Melee>" +
-			"<Hack>10.0</Hack>" +
-			"<Pierce>0.0</Pierce>" +
-			"<Crush>5.0</Crush>" +
-			"<MaxRange>4.0</MaxRange>" +
-			"<RepeatTime>1000</RepeatTime>" +
-			"<Bonuses>" +
-				"<Bonus1>" +
-					"<Civ>pers</Civ>" +
-					"<Classes>Infantry</Classes>" +
-					"<Multiplier>1.5</Multiplier>" +
-				"</Bonus1>" +
-				"<BonusCavMelee>" +
-					"<Classes>Cavalry Melee</Classes>" +
-					"<Multiplier>1.5</Multiplier>" +
-				"</BonusCavMelee>" +
-			"</Bonuses>" +
-			"<RestrictedClasses datatype=\"tokens\">Champion</RestrictedClasses>" +
-			"<PreferredClasses datatype=\"tokens\">Cavalry Infantry</PreferredClasses>" +
-		"</Melee>" +
-		"<Ranged>" +
-			"<Hack>0.0</Hack>" +
-			"<Pierce>10.0</Pierce>" +
-			"<Crush>0.0</Crush>" +
-			"<MaxRange>44.0</MaxRange>" +
-			"<MinRange>20.0</MinRange>" +
-			"<ElevationBonus>15.0</ElevationBonus>" +
-			"<PrepareTime>800</PrepareTime>" +
-			"<RepeatTime>1600</RepeatTime>" +
-			"<ProjectileSpeed>50.0</ProjectileSpeed>" +
-			"<Spread>2.5</Spread>" +
-			"<Bonuses>" +
-				"<Bonus1>" +
-					"<Classes>Cavalry</Classes>" +
-					"<Multiplier>2</Multiplier>" +
-				"</Bonus1>" +
-			"</Bonuses>" +
-			"<RestrictedClasses datatype=\"tokens\">Champion</RestrictedClasses>" +
-			"<Splash>" +
-				"<Shape>Circular</Shape>" +
-				"<Range>20</Range>" +
-				"<FriendlyFire>false</FriendlyFire>" +
-				"<Hack>0.0</Hack>" +
-				"<Pierce>10.0</Pierce>" +
-				"<Crush>0.0</Crush>" +
-			"</Splash>" +
-		"</Ranged>" +
-		"<Charge>" +
-			"<Hack>10.0</Hack>" +
-			"<Pierce>0.0</Pierce>" +
-			"<Crush>50.0</Crush>" +
-			"<MaxRange>24.0</MaxRange>" +
-			"<MinRange>20.0</MinRange>" +
-		"</Charge>" +
-		"<Slaughter>" +
-			"<Hack>1000.0</Hack>" +
-			"<Pierce>0.0</Pierce>" +
-			"<Crush>0.0</Crush>" +
-			"<MaxRange>4.0</MaxRange>" +
-		"</Slaughter>" +
-	"</a:example>" +
-	"<optional>" +
-		"<element name='Melee'>" +
-			"<interleave>" +
-				"<element name='Hack' a:help='Hack damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Pierce' a:help='Pierce damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Crush' a:help='Crush damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='MaxRange' a:help='Maximum attack range (in metres)'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='RepeatTime' a:help='Time between attacks (in milliseconds). The attack animation will be stretched to match this time'>" + // TODO: it shouldn't be stretched
-					"<data type='positiveInteger'/>" +
-				"</element>" +
-				bonusesSchema +
-				preferredClassesSchema +
-				restrictedClassesSchema +
-			"</interleave>" +
-		"</element>" +
-	"</optional>" +
-	"<optional>" +
-		"<element name='Ranged'>" +
-			"<interleave>" +
-				"<element name='Hack' a:help='Hack damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Pierce' a:help='Pierce damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Crush' a:help='Crush damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='MaxRange' a:help='Maximum attack range (in metres)'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='MinRange' a:help='Minimum attack range (in metres)'><ref name='nonNegativeDecimal'/></element>" +
-				"<optional>"+
-					"<element name='ElevationBonus' a:help='give an elevation advantage (in meters)'><ref name='nonNegativeDecimal'/></element>" +
-				"</optional>" +
-				"<element name='PrepareTime' a:help='Time from the start of the attack command until the attack actually occurs (in milliseconds). This value relative to RepeatTime should closely match the \"event\" point in the actor&apos;s attack animation'>" +
-					"<data type='nonNegativeInteger'/>" +
-				"</element>" +
-				"<element name='RepeatTime' a:help='Time between attacks (in milliseconds). The attack animation will be stretched to match this time'>" +
-					"<data type='positiveInteger'/>" +
-				"</element>" +
-				"<element name='ProjectileSpeed' a:help='Speed of projectiles (in metres per second). If unspecified, then it is a melee attack instead'>" +
-					"<ref name='nonNegativeDecimal'/>" +
-				"</element>" +
-				"<element name='Spread' a:help='Radius over which missiles will tend to land (when shooting to the maximum range). Roughly 2/3 will land inside this radius (in metres). Spread is linearly diminished as the target gets closer.'><ref name='nonNegativeDecimal'/></element>" +
-				bonusesSchema +
-				preferredClassesSchema +
-				restrictedClassesSchema +
-				"<optional>" +
-					"<element name='Splash'>" +
-						"<interleave>" +
-							"<element name='Shape' a:help='Shape of the splash damage, can be circular or linear'><text/></element>" +
-							"<element name='Range' a:help='Size of the area affected by the splash'><ref name='nonNegativeDecimal'/></element>" +
-							"<element name='FriendlyFire' a:help='Whether the splash damage can hurt non enemy units'><data type='boolean'/></element>" +
-							"<element name='Hack' a:help='Hack damage strength'><ref name='nonNegativeDecimal'/></element>" +
-							"<element name='Pierce' a:help='Pierce damage strength'><ref name='nonNegativeDecimal'/></element>" +
-							"<element name='Crush' a:help='Crush damage strength'><ref name='nonNegativeDecimal'/></element>" +
-							bonusesSchema +
-						"</interleave>" +
-					"</element>" +
-				"</optional>" +
-			"</interleave>" +
-		"</element>" +
-	"</optional>" +
-	"<optional>" +
-		"<element name='Charge'>" +
-			"<interleave>" +
-				"<element name='Hack' a:help='Hack damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Pierce' a:help='Pierce damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Crush' a:help='Crush damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='MaxRange'><ref name='nonNegativeDecimal'/></element>" + // TODO: how do these work?
-				"<element name='MinRange'><ref name='nonNegativeDecimal'/></element>" +
-				bonusesSchema +
-				preferredClassesSchema +
-				restrictedClassesSchema +
-			"</interleave>" +
-		"</element>" +
-	"</optional>" +
-	"<optional>" +
-		"<element name='Slaughter' a:help='A special attack to kill domestic animals'>" +
-			"<interleave>" +
-				"<element name='Hack' a:help='Hack damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Pierce' a:help='Pierce damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='Crush' a:help='Crush damage strength'><ref name='nonNegativeDecimal'/></element>" +
-				"<element name='MaxRange'><ref name='nonNegativeDecimal'/></element>" + // TODO: how do these work?
-				bonusesSchema +
-				preferredClassesSchema +
-				restrictedClassesSchema +
-			"</interleave>" +
-		"</element>" +
-	"</optional>"
-;
-
-
+// Extend the Attack component schema:
 Attack.prototype.Schema += 
 	// TODO: finish the convert attack
   	"<optional>" +
@@ -330,7 +142,7 @@ Attack.prototype.PerformAttack = function(type, target)
 
 
 
-
+/*
 // Get nearby entities and define variables
 //var nearEnts = Damage.EntitiesNearPoint(data.origin, data.radius, data.playersToDamage);
 
@@ -353,7 +165,7 @@ Attack.prototype.GetNearbyEntities = function(startEnt, range, friendlyFire)
 	var rangeManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_RangeManager);
 	return rangeManager.ExecuteQuery(startEnt, 0, range, players, IID_DamageReceiver);
 }
+*/
 
 
-
-Engine.RegisterComponentType(IID_Attack, "Attack",  Attack);
+Engine.ReRegisterComponentType(IID_Attack, "Attack",  Attack);
