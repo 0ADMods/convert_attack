@@ -1,4 +1,45 @@
 
+
+Attack.prototype.bonusesSchema = 
+	"<optional>" +
+		"<element name='Bonuses'>" +
+			"<zeroOrMore>" +
+				"<element>" +
+					"<anyName/>" +
+					"<interleave>" +
+						"<optional>" +
+							"<element name='Civ' a:help='If an entity has this civ then the bonus is applied'><text/></element>" +
+						"</optional>" +
+						"<element name='Classes' a:help='If an entity has all these classes then the bonus is applied'><text/></element>" +
+						"<element name='Multiplier' a:help='The attackers attack strength is multiplied by this'><ref name='nonNegativeDecimal'/></element>" +
+					"</interleave>" +
+				"</element>" +
+			"</zeroOrMore>" +
+		"</element>" +
+	"</optional>";
+
+Attack.prototype.preferredClassesSchema =
+	"<optional>" +
+		"<element name='PreferredClasses' a:help='Space delimited list of classes preferred for attacking. If an entity has any of theses classes, it is preferred. The classes are in decending order of preference'>" +
+			"<attribute name='datatype'>" +
+				"<value>tokens</value>" +
+			"</attribute>" +
+			"<text/>" +
+		"</element>" +
+	"</optional>";
+
+Attack.prototype.restrictedClassesSchema =
+	"<optional>" +
+		"<element name='RestrictedClasses' a:help='Space delimited list of classes that cannot be attacked by this entity. If target entity has any of these classes, it cannot be attacked'>" +
+			"<attribute name='datatype'>" +
+				"<value>tokens</value>" +
+			"</attribute>" +
+			"<text/>" +
+		"</element>" +
+	"</optional>";
+
+
+
 // Extend the Attack component schema:
 Attack.prototype.Schema += 
 	// TODO: finish the convert attack
@@ -16,9 +57,9 @@ Attack.prototype.Schema +=
 				"<element name='RepeatTime' a:help='Time between attacks (in milliseconds). The attack animation will be stretched to match this time'>" +
 					"<data type='positiveInteger'/>" +
 				"</element>" +
-				bonusesSchema +
-				preferredClassesSchema +
-				restrictedClassesSchema +
+				Attack.prototype.bonusesSchema +
+				Attack.prototype.preferredClassesSchema +
+				Attack.prototype.restrictedClassesSchema +
 			"</interleave>" +
 		"</element>" +
 	"</optional>";
