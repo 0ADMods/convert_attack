@@ -66,7 +66,7 @@ Attack.prototype.Schema +=
 
 Attack.prototype.GetAttackTypes = function()
 {
-    warn('GetAttackTypes: this: ' + this + ' template: ' + this.template + '   is_convert_in_template: ' + this.template.Convert);
+    //warn('GetAttackTypes: this: ' + this + ' template: ' + this.template + '   is_convert_in_template: ' + this.template.Convert);
 	var ret = [];
 	if (this.template.Convert) ret.push("Convert");
 	if (this.template.Charge) ret.push("Charge");
