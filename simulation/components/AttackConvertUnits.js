@@ -179,6 +179,10 @@ Attack.prototype.PerformAttack = function(type, target)
 				// Fully convert to a normal unit of your own, the original ethnicity still recognizable.
 				cmpOwnership.SetOwner(cmpOwnership2.GetOwner());
 				warn('Unit ' + this.entity + ' (Owner: '+ cmpOwnership +') immediately integrated target: ' + target + ' (Owner: '+ cmpOwnership2 +' ).');
+				var cmpTargetEntityPlayer = QueryOwnerInterface(target, IID_Player);
+				var cmpPlayer = QueryOwnerInterface(this.entity, IID_Player);
+				Engine.PostMessage(this.entity, MT_OwnershipChanged, { "entity": target,
+			"from": cmpTargetEntityPlayer.playerID, "to": cmpPlayer.playerID });
 			}
 			else
 			{
