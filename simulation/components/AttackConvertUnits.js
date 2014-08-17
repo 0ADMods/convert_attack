@@ -83,7 +83,7 @@ Attack.prototype.GetAttackTypes = function()
  */
 Attack.prototype.PerformAttack = function(type, target)
 {
-    warn('type: ' + type + '  target: ' + target);
+    //warn('type: ' + type + '  target: ' + target);
 	// If this is a ranged attack, then launch a projectile
 	if (type == "Ranged")
 	{
