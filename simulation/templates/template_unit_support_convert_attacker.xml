@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Entity parent="template_unit_support">
-  <Cost>
-    <Resources>
-      <metal>100</metal>
-    </Resources>
-  </Cost>
   <Attack>
     <Convert>
     	<MaxRange>16</MaxRange>
@@ -13,13 +8,19 @@
       <RepeatTime>20000</RepeatTime>
     </Convert>
   </Attack>
+  <Cost>
+	  <Resources>
+		  <metal>100</metal>
+	  </Resources>
+  </Cost>
   <Health>
     <Max>85</Max>
   </Health>
   <Identity>
-    <VisibleClasses datatype="tokens">Healer</VisibleClasses>
-    <GenericName>Healer</GenericName>
-    <Tooltip>Heal units.</Tooltip>
+	<GenericName>Convert Attacker</GenericClasses>
+    <VisibleClasses datatype="tokens">Priest</VisibleClasses>
+    <GenericName>ConvertAttacker</GenericName>
+    <Tooltip>Has special attack, that makes enemy units defect to your side.</Tooltip>
     <Rank>Basic</Rank>
   </Identity>
   <Promotion>
