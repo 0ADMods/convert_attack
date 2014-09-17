@@ -17,7 +17,7 @@
     <Max>85</Max>
   </Health>
   <Identity>
-	<GenericName>Convert Attacker</GenericClasses>
+	<GenericName>Convert Attacker</GenericName>
     <VisibleClasses datatype="tokens">Priest</VisibleClasses>
     <GenericName>ConvertAttacker</GenericName>
     <Tooltip>Has special attack, that makes enemy units defect to your side.</Tooltip>
