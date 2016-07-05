@@ -194,7 +194,7 @@ Attack.prototype.PerformAttack = function(type, target)
 		let cmpUnitAi = Engine.QueryInterface(this.entity, IID_UnitAI);
 		let owner = cmpOwnership.GetOwner();
 		let cmpCapturable = Engine.QueryInterface(target, IID_Capturable);
-		if (!cmpCapturable || !cmpCapturable.CanCapture(owner))
+		if (!cmpCapturable || !cmpCapturable.CanCapture(owner) && cmpUnitAi.CanConvert(target))
 		{
 			if (isImmediatelyIntegrated)
 			{
