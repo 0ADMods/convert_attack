@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Entity parent="template_unit_support_converter">
+<Entity parent="template_unit_support_convert_attacker">
   <Health>
     <Max>95</Max>
   </Health>

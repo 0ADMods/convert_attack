@@ -66,15 +66,8 @@ Attack.prototype.Schema +=
 
 Attack.prototype.GetAttackTypes = function()
 {
-    //warn('GetAttackTypes: this: ' + this + ' template: ' + this.template + '   is_convert_in_template: ' + this.template.Convert);
-	var ret = [];
-	if (this.template.Convert) ret.push("Convert");
-	if (this.template.Charge) ret.push("Charge");
-	if (this.template.Melee) ret.push("Melee");
-	if (this.template.Ranged) ret.push("Ranged");
-	return ret;
+	return ["Melee", "Ranged", "Capture", "Convert"].filter(type => !!this.template[type]);
 };
-
 
 /**
  * Attack the target entity. This should only be called after a successful range check,
@@ -83,110 +76,139 @@ Attack.prototype.GetAttackTypes = function()
  */
 Attack.prototype.PerformAttack = function(type, target)
 {
-    //warn('type: ' + type + '  target: ' + target);
 	// If this is a ranged attack, then launch a projectile
 	if (type == "Ranged")
 	{
-		var cmpTimer = Engine.QueryInterface(SYSTEM_ENTITY, IID_Timer);
-		var turnLength = cmpTimer.GetLatestTurnLength() / 1000;
+		let cmpTimer = Engine.QueryInterface(SYSTEM_ENTITY, IID_Timer);
+		let turnLength = cmpTimer.GetLatestTurnLength()/1000;
 		// In the future this could be extended:
 		//  * Obstacles like trees could reduce the probability of the target being hit
 		//  * Obstacles like walls should block projectiles entirely
 
 		// Get some data about the entity
-		var horizSpeed = +this.template[type].ProjectileSpeed;
-		var gravity = 9.81; // this affects the shape of the curve; assume it's constant for now
+		let horizSpeed = +this.template[type].ProjectileSpeed;
+		let gravity = 9.81; // this affects the shape of the curve; assume it's constant for now
 
-		var spread = +this.template.Ranged.Spread;
+		let spread = +this.template.Ranged.Spread;
 		spread = ApplyValueModificationsToEntity("Attack/Ranged/Spread", spread, this.entity);
 
 		//horizSpeed /= 2; gravity /= 2; // slow it down for testing
 
-		var cmpPosition = Engine.QueryInterface(this.entity, IID_Position);
+		let cmpPosition = Engine.QueryInterface(this.entity, IID_Position);
 		if (!cmpPosition || !cmpPosition.IsInWorld())
 			return;
-		var selfPosition = cmpPosition.GetPosition();
-		var cmpTargetPosition = Engine.QueryInterface(target, IID_Position);
+		let selfPosition = cmpPosition.GetPosition();
+		let cmpTargetPosition = Engine.QueryInterface(target, IID_Position);
 		if (!cmpTargetPosition || !cmpTargetPosition.IsInWorld())
 			return;
-		var targetPosition = cmpTargetPosition.GetPosition();
+		let targetPosition = cmpTargetPosition.GetPosition();
 
-		var relativePosition = Vector3D.sub(targetPosition, selfPosition);
-		var previousTargetPosition = Engine.QueryInterface(target, IID_Position).GetPreviousPosition();
+		let relativePosition = Vector3D.sub(targetPosition, selfPosition);
+		let previousTargetPosition = Engine.QueryInterface(target, IID_Position).GetPreviousPosition();
 
-		var targetVelocity = Vector3D.sub(targetPosition, previousTargetPosition).div(turnLength);
-		// the component of the targets velocity radially away from the archer
-		var radialSpeed = relativePosition.dot(targetVelocity) / relativePosition.length();
+		let targetVelocity = Vector3D.sub(targetPosition, previousTargetPosition).div(turnLength);
+		// The component of the targets velocity radially away from the archer
+		let radialSpeed = relativePosition.dot(targetVelocity) / relativePosition.length();
 
-		var horizDistance = targetPosition.horizDistanceTo(selfPosition);
+		let horizDistance = targetPosition.horizDistanceTo(selfPosition);
 
-		// This is an approximation of the time ot the target, it assumes that the target has a constant radial 
-		// velocity, but since units move in straight lines this is not true.  The exact value would be more 
-		// difficult to calculate and I think this is sufficiently accurate.  (I tested and for cavalry it was 
+		// This is an approximation of the time ot the target, it assumes that the target has a constant radial
+		// velocity, but since units move in straight lines this is not true.  The exact value would be more
+		// difficult to calculate and I think this is sufficiently accurate.  (I tested and for cavalry it was
 		// about 5% of the units radius out in the worst case)
-		var timeToTarget = horizDistance / (horizSpeed - radialSpeed);
+		let timeToTarget = horizDistance / (horizSpeed - radialSpeed);
 
 		// Predict where the unit is when the missile lands.
-		var predictedPosition = Vector3D.mult(targetVelocity, timeToTarget).add(targetPosition);
+		let predictedPosition = Vector3D.mult(targetVelocity, timeToTarget).add(targetPosition);
 
 		// Compute the real target point (based on spread and target speed)
-		var range = this.GetRange(type);
-		var cmpRangeManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_RangeManager);
-		var elevationAdaptedMaxRange = cmpRangeManager.GetElevationAdaptedRange(selfPosition, cmpPosition.GetRotation(), range.max, range.elevationBonus, 0);
-		var distanceModifiedSpread = spread * horizDistance/elevationAdaptedMaxRange;
+		let range = this.GetRange(type);
+		let cmpRangeManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_RangeManager);
+		let elevationAdaptedMaxRange = cmpRangeManager.GetElevationAdaptedRange(selfPosition, cmpPosition.GetRotation(), range.max, range.elevationBonus, 0);
+		let distanceModifiedSpread = spread * horizDistance/elevationAdaptedMaxRange;
 
-		var randNorm = this.GetNormalDistribution();
-		var offsetX = randNorm[0] * distanceModifiedSpread * (1 + targetVelocity.length() / 20);
-		var offsetZ = randNorm[1] * distanceModifiedSpread * (1 + targetVelocity.length() / 20);
+		let randNorm = this.GetNormalDistribution();
+		let offsetX = randNorm[0] * distanceModifiedSpread * (1 + targetVelocity.length() / 20);
+		let offsetZ = randNorm[1] * distanceModifiedSpread * (1 + targetVelocity.length() / 20);
 
-		var realTargetPosition = new Vector3D(predictedPosition.x + offsetX, targetPosition.y, predictedPosition.z + offsetZ);
+		let realTargetPosition = new Vector3D(predictedPosition.x + offsetX, targetPosition.y, predictedPosition.z + offsetZ);
 
 		// Calculate when the missile will hit the target position
-		var realHorizDistance = realTargetPosition.horizDistanceTo(selfPosition);
-		var timeToTarget = realHorizDistance / horizSpeed;
+		let realHorizDistance = realTargetPosition.horizDistanceTo(selfPosition);
+		timeToTarget = realHorizDistance / horizSpeed;
 
-		var missileDirection = Vector3D.sub(realTargetPosition, selfPosition).div(realHorizDistance);
+		let missileDirection = Vector3D.sub(realTargetPosition, selfPosition).div(realHorizDistance);
 
-		// Make the arrow appear to land slightly behind the target so that arrows landing next to a guys foot don't count but arrows that go through the torso do
-		var graphicalPosition = Vector3D.mult(missileDirection, 2).add(realTargetPosition);
 		// Launch the graphical projectile
-		var cmpProjectileManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_ProjectileManager);
-		var id = cmpProjectileManager.LaunchProjectileAtPoint(this.entity, realTargetPosition, horizSpeed, gravity);
+		let cmpProjectileManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_ProjectileManager);
+		let id = cmpProjectileManager.LaunchProjectileAtPoint(this.entity, realTargetPosition, horizSpeed, gravity);
 
-		var playerId = Engine.QueryInterface(this.entity, IID_Ownership).GetOwner()
-		var cmpTimer = Engine.QueryInterface(SYSTEM_ENTITY, IID_Timer);
- 		cmpTimer.SetTimeout(this.entity, IID_Attack, "MissileHit", timeToTarget*1000, {"type": type, "target": target, "position": realTargetPosition, "direction": missileDirection, "projectileId": id, "playerId":playerId});
-    }
+		let playerId = Engine.QueryInterface(this.entity, IID_Ownership).GetOwner();
+		cmpTimer = Engine.QueryInterface(SYSTEM_ENTITY, IID_Timer);
+		cmpTimer.SetTimeout(this.entity, IID_Attack, "MissileHit", timeToTarget * 1000, {
+			"type": type,
+			"target": target,
+			"position": realTargetPosition,
+			"direction": missileDirection,
+			"projectileId": id,
+			"playerId":playerId
+		});
+	}
+	else if (type == "Capture")
+	{
+		let multiplier = this.GetAttackBonus(type, target);
+		let cmpHealth = Engine.QueryInterface(target, IID_Health);
+		if (!cmpHealth || cmpHealth.GetHitpoints() == 0)
+			return;
+		multiplier *= cmpHealth.GetMaxHitpoints() / (0.1 * cmpHealth.GetMaxHitpoints() + 0.9 * cmpHealth.GetHitpoints());
+
+		let cmpOwnership = Engine.QueryInterface(this.entity, IID_Ownership);
+		if (!cmpOwnership || cmpOwnership.GetOwner() == -1)
+			return;
+
+		let owner = cmpOwnership.GetOwner();
+		let cmpCapturable = Engine.QueryInterface(target, IID_Capturable);
+		if (!cmpCapturable || !cmpCapturable.CanCapture(owner))
+			return;
+
+		let strength = this.GetAttackStrengths("Capture").value * multiplier;
+		if (cmpCapturable.Reduce(strength, owner))
+			Engine.PostMessage(target, MT_Attacked, {
+				"attacker": this.entity,
+				"target": target,
+				"type": type,
+				"damage": strength
+			});
+	}
 	else if (type == "Convert")
 	{
         
-		var cmpOwnership = Engine.QueryInterface(target, IID_Ownership);
+		let cmpOwnership = Engine.QueryInterface(target, IID_Ownership);
 		if (!cmpOwnership)
 			return;
-        //warn('Owner Target: ' + cmpOwnership);
-
-		var cmpOwnership2 = Engine.QueryInterface(this.entity, IID_Ownership);
+		let cmpOwnership2 = Engine.QueryInterface(this.entity, IID_Ownership);
 		if (!cmpOwnership2)
 			return;
-        //warn('Owner Source: ' + cmpOwnership2);
 
-		var isImmediatelyIntegrated = true;
-		var cmpUnitAi = Engine.QueryInterface(this.entity, IID_UnitAI);
-		if (cmpUnitAi.CanCapture(target))
+		let isImmediatelyIntegrated = true;
+		let cmpUnitAi = Engine.QueryInterface(this.entity, IID_UnitAI);
+		let owner = cmpOwnership.GetOwner();
+		let cmpCapturable = Engine.QueryInterface(target, IID_Capturable);
+		if (!cmpCapturable || !cmpCapturable.CanCapture(owner))
 		{
 			if (isImmediatelyIntegrated)
 			{
 				// Fully convert to a normal unit of your own, the original ethnicity still recognizable.
 				cmpOwnership.SetOwner(cmpOwnership2.GetOwner());
 				warn('Unit ' + this.entity + ' (Owner: '+ cmpOwnership +') immediately integrated target: ' + target + ' (Owner: '+ cmpOwnership2 +' ).');
-				var cmpTargetEntityPlayer = QueryOwnerInterface(target, IID_Player);
-				var cmpPlayer = QueryOwnerInterface(this.entity, IID_Player);
+				let cmpTargetEntityPlayer = QueryOwnerInterface(target, IID_Player);
+				let cmpPlayer = QueryOwnerInterface(this.entity, IID_Player);
 				Engine.PostMessage(this.entity, MT_OwnershipChanged, { "entity": target,
 			"from": cmpTargetEntityPlayer.playerID, "to": cmpPlayer.playerID });
 			}
 			else
 			{
-				var cmpTargetUnitAi = Engine.QueryInterface(target, IID_UnitAI);
+				let cmpTargetUnitAi = Engine.QueryInterface(target, IID_UnitAI);
 				if (cmpTargetUnitAi) 
 				{
 					// Take prisoner of war (make it either a prisoner, i.e. garrison or keep it with guards, or a slave worker). Only change accessories or clothes.
@@ -207,37 +229,15 @@ Attack.prototype.PerformAttack = function(type, target)
 	else
 	{
 		// Melee attack - hurt the target immediately
-		Damage.CauseDamage({"strengths":this.GetAttackStrengths(type), "target":target, "attacker":this.entity, "multiplier":this.GetAttackBonus(type, target), "type":type});
+		Damage.CauseDamage({
+			"strengths": this.GetAttackStrengths(type),
+			"target": target,
+			"attacker": this.entity,
+			"multiplier": this.GetAttackBonus(type, target),
+			"type":type
+		});
 	}
 	// TODO: charge attacks (need to design how they work)
-
 };
-
-
-
-/*
-// Get nearby entities and define variables
-//var nearEnts = Damage.EntitiesNearPoint(data.origin, data.radius, data.playersToDamage);
-
-Attack.prototype.GetNearbyEntities = function(startEnt, range, friendlyFire)
-{
-	var cmpPlayerManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_PlayerManager);
-	var cmpOwnership = Engine.QueryInterface(this.entity, IID_Ownership);
-	var owner = cmpOwnership.GetOwner();
-	var cmpPlayer = Engine.QueryInterface(cmpPlayerManager.GetPlayerByID(owner), IID_Player);
-	var numPlayers = cmpPlayerManager.GetNumPlayers();
-	var players = [];
-	
-	for (var i = 1; i < numPlayers; ++i)
-	{	
-		// Only target enemies unless friendly fire is on
-		if (cmpPlayer.IsEnemy(i) || friendlyFire)
-			players.push(i);
-	}
-	
-	var rangeManager = Engine.QueryInterface(SYSTEM_ENTITY, IID_RangeManager);
-	return rangeManager.ExecuteQuery(startEnt, 0, range, players, IID_DamageReceiver);
-}
-*/
 
 Engine.ReRegisterComponentType(IID_Attack, "Attack",  Attack);
