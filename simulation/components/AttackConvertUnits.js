@@ -1,47 +1,5 @@
-
-
-Attack.prototype.bonusesSchema = 
-	"<optional>" +
-		"<element name='Bonuses'>" +
-			"<zeroOrMore>" +
-				"<element>" +
-					"<anyName/>" +
-					"<interleave>" +
-						"<optional>" +
-							"<element name='Civ' a:help='If an entity has this civ then the bonus is applied'><text/></element>" +
-						"</optional>" +
-						"<element name='Classes' a:help='If an entity has all these classes then the bonus is applied'><text/></element>" +
-						"<element name='Multiplier' a:help='The attackers attack strength is multiplied by this'><ref name='nonNegativeDecimal'/></element>" +
-					"</interleave>" +
-				"</element>" +
-			"</zeroOrMore>" +
-		"</element>" +
-	"</optional>";
-
-Attack.prototype.preferredClassesSchema =
-	"<optional>" +
-		"<element name='PreferredClasses' a:help='Space delimited list of classes preferred for attacking. If an entity has any of theses classes, it is preferred. The classes are in decending order of preference'>" +
-			"<attribute name='datatype'>" +
-				"<value>tokens</value>" +
-			"</attribute>" +
-			"<text/>" +
-		"</element>" +
-	"</optional>";
-
-Attack.prototype.restrictedClassesSchema =
-	"<optional>" +
-		"<element name='RestrictedClasses' a:help='Space delimited list of classes that cannot be attacked by this entity. If target entity has any of these classes, it cannot be attacked'>" +
-			"<attribute name='datatype'>" +
-				"<value>tokens</value>" +
-			"</attribute>" +
-			"<text/>" +
-		"</element>" +
-	"</optional>";
-
-
-
 // Extend the Attack component schema:
-Attack.prototype.Schema += 
+Attack.prototype.Schema +=
 	// TODO: finish the convert attack
   	"<optional>" +
 		"<element name='Convert'>" +
@@ -182,49 +140,7 @@ Attack.prototype.PerformAttack = function(type, target)
 	}
 	else if (type == "Convert")
 	{
-        
-		let cmpOwnership = Engine.QueryInterface(target, IID_Ownership);
-		if (!cmpOwnership)
-			return;
-		let cmpOwnership2 = Engine.QueryInterface(this.entity, IID_Ownership);
-		if (!cmpOwnership2)
-			return;
-
-		let isImmediatelyIntegrated = true;
-		let cmpUnitAi = Engine.QueryInterface(this.entity, IID_UnitAI);
-		let owner = cmpOwnership.GetOwner();
-		let cmpCapturable = Engine.QueryInterface(target, IID_Capturable);
-		if (!cmpCapturable || !cmpCapturable.CanCapture(owner) && cmpUnitAi.CanConvert(target))
-		{
-			if (isImmediatelyIntegrated)
-			{
-				// Fully convert to a normal unit of your own, the original ethnicity still recognizable.
-				cmpOwnership.SetOwner(cmpOwnership2.GetOwner());
-				warn('Unit ' + this.entity + ' (Owner: '+ cmpOwnership +') immediately integrated target: ' + target + ' (Owner: '+ cmpOwnership2 +' ).');
-				let cmpTargetEntityPlayer = QueryOwnerInterface(target, IID_Player);
-				let cmpPlayer = QueryOwnerInterface(this.entity, IID_Player);
-				Engine.PostMessage(this.entity, MT_OwnershipChanged, { "entity": target,
-			"from": cmpTargetEntityPlayer.playerID, "to": cmpPlayer.playerID });
-			}
-			else
-			{
-				let cmpTargetUnitAi = Engine.QueryInterface(target, IID_UnitAI);
-				if (cmpTargetUnitAi) 
-				{
-					// Take prisoner of war (make it either a prisoner, i.e. garrison or keep it with guards, or a slave worker). Only change accessories or clothes.
-					// TODO Trigger guard function: i.e. make the captives/slaves guard their capturer.
-					if (cmpTargetUnitAi.isGuardOf())
-						cmpTargetUnitAi.RemoveGuard();
-					cmpTargetUnitAi.UnitFsmSpec["Order.Guard"]({ target:target_entity });
-					// TODO Change Actor or add slave robe or adapt other props.
-					 
-				}
-			}
-			Engine.PostMessage(target, MT_OwnershipChanged, { "entity": this.entity });
-		}		
-		else 
-			warn("Can't capture: " + target);
-
+		this.PerformConvert(target);
 	}
 	else
 	{
@@ -239,5 +155,45 @@ Attack.prototype.PerformAttack = function(type, target)
 	}
 	// TODO: charge attacks (need to design how they work)
 };
+Attack.prototype.PerformConvert = function(target)
+{
+	let cmpUnitAi = Engine.QueryInterface(this.entity, IID_UnitAI);
+	if (!cmpUnitAi)
+		return;
 
+	let IsPrisoner = false;
+	if (cmpUnitAi.CanConvert(target))
+	{
+		if (IsPrisoner)
+		{	/*
+			// Take prisoner of war (make it either a prisoner, i.e. garrison or keep it with guards, or a slave worker). Only change accessories or clothes.
+			let cmpTargetUnitAi = Engine.QueryInterface(target, IID_UnitAI);
+			if (!cmpTargetUnitAi)
+				return;
+
+			// TODO Trigger guard function: i.e. make the captives/slaves guard their capturer.
+			if (cmpTargetUnitAi.isGuardOf())
+				cmpTargetUnitAi.RemoveGuard();
+
+			cmpTargetUnitAi.UnitFsmSpec["Order.Guard"]( { target:target_entity } );
+			// TODO Change Actor or add slave robe or adapt other props.
+			//Engine.PostMessage(target, MT_OwnershipChanged, { "entity": this.entity });
+			*/
+		}
+		else
+		{
+			let cmpTargetOwnership = Engine.QueryInterface(target, IID_Ownership);
+			if (!cmpTargetOwnership)
+				return;
+			let cmpOwnership = Engine.QueryInterface(this.entity, IID_Ownership);
+			if (!cmpOwnership)
+				return;
+			// Fully convert to a normal unit of your own, the original ethnicity still recognizable.
+			let cmpTargetEntityPlayer = QueryOwnerInterface(target, IID_Player);
+			let cmpPlayer = QueryOwnerInterface(this.entity, IID_Player);
+			cmpTargetOwnership.SetOwner(cmpOwnership.GetOwner());
+			Engine.PostMessage(this.entity, MT_OwnershipChanged, { "entity": target, "from": cmpTargetEntityPlayer.playerID, "to": cmpPlayer.playerID });
+		}
+	}
+}
 Engine.ReRegisterComponentType(IID_Attack, "Attack",  Attack);
