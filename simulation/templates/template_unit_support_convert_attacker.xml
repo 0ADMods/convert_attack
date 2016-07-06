@@ -7,6 +7,13 @@
 			<PrepareTime>1000</PrepareTime>
 			<RepeatTime>20000</RepeatTime>
 		</Convert>
+		<Melee>
+			<Hack>0.0</Hack>
+			<Pierce>0</Pierce>
+			<Crush>0.0</Crush>
+			<MaxRange>6.0</MaxRange>
+			<RepeatTime>750</RepeatTime>
+		</Melee>
 	</Attack>
 	<Cost>
 		<Resources>
